@@ -144,11 +144,11 @@ class Node:
                 raise TypeError(
                     'Type expected to be list[{DataSegment.__name__}]')
             self.__r_segs += r_segs
-        else:
-            if not isinstance(r_segs, DataSegment):
-                raise TypeError(
-                    f'Type expected to be {DataSegment.__name__}')
+        elif isinstance(r_segs, DataSegment):
             self.__r_segs.append(r_segs)
+        else:
+            raise TypeError(
+                f'Type expected to be {DataSegment.__name__}')
 
     def reset_read_segs(self):
         """
@@ -178,11 +178,11 @@ class Node:
                 raise TypeError(
                     f'Type expected to be list[{DataSegment.__name__}]')
             self.__w_segs += w_segs
-        else:
-            if not isinstance(w_segs, DataSegment):
-                raise TypeError(
-                    f"Type expected to be {DataSegment.__name__}")
+        elif isinstance(w_segs, DataSegment):
             self.__w_segs.append(w_segs)
+        else:
+            raise TypeError(
+                f"Type expected to be {DataSegment.__name__}")
 
     def reset_write_segs(self):
         """
@@ -317,10 +317,7 @@ class TransNode(Node):
         Returns:
             rank (int) for send-op, None for other cases
         """
-        if self.op == TransNodeType.SEND:
-            return self.__dst
-        else:
-            return None
+        return self.__dst if self.op == TransNodeType.SEND else None
 
     @dst.setter
     def dst(self, rank):
@@ -351,10 +348,7 @@ class TransNode(Node):
         Returns:
             rank (int) for recv-op, None for other cases
         """
-        if self.op == TransNodeType.RECV:
-            return self.__src
-        else:
-            return None
+        return self.__src if self.op == TransNodeType.RECV else None
 
     @src.setter
     def src(self, rank):
@@ -410,14 +404,12 @@ class TransNode(Node):
     def __repr__(self):
         if self.op == TransNodeType.SEND:
             rseg = self.r_segs[0]
-            return 'Send {} -> rank {}'.format(rseg, self.dst)
+            return f'Send {rseg} -> rank {self.dst}'
         elif self.op == TransNodeType.RECV:
             wseg = self.w_segs[0]
-            return 'Recv {} <- rank {} Reduction: {}'\
-                .format(wseg, self.src, self.reduction)
+            return f'Recv {wseg} <- rank {self.src} Reduction: {self.reduction}'
         else:
-            raise TypeError(
-                "Unknown type for TransNode: {}".format(self.op))
+            raise TypeError(f"Unknown type for TransNode: {self.op}")
 
 
 class CompNode(Node):
@@ -618,9 +610,7 @@ class CompNode(Node):
         elif self.op == CompNodeType.CREATE:
             op_type = 'create'
         else:
-            raise TypeError(
-                "Unknown type for compute operation {}".format(self.op))
+            raise TypeError(f"Unknown type for compute operation {self.op}")
 
         lhs = '' if self.lhs is None else self.lhs
-        return '{} <- {} {} {}'.format(
-            self.output, lhs, op_type, self.rhs)
+        return f'{self.output} <- {lhs} {op_type} {self.rhs}'

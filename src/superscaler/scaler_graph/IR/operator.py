@@ -82,9 +82,7 @@ class ApplyOp(Operator):
         # TODO(gbxu): check input shapes
         parameter_shape = node._input_tensors[
             self.info["parameter_index"]].shape()
-        output_shape = []
-        for i in range(len(parameter_shape)):
-            output_shape.append(parameter_shape[i])
+        output_shape = [parameter_shape[i] for i in range(len(parameter_shape))]
         node._output_tensors[0].shape = output_shape
 
     def partition(self, node):

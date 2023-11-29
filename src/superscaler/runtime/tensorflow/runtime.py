@@ -23,10 +23,11 @@ class TFRuntime(Runtime):
         try:
             self.tf_exe_lib = tf.load_op_library(self.get_sc_lib_path())
         except BaseException:
-            raise Exception("libsuperscaler: %s is not loaded by tensorflow!" %
-                            (self.libsuperscaler))
+            raise Exception(
+                f"libsuperscaler: {self.libsuperscaler} is not loaded by tensorflow!"
+            )
         self._graph, self._inits, self._feeds, self._fetches, self._targets =\
-            self.__load_tf_graph(graph_file, graph_desc_file, self.device_id())
+                self.__load_tf_graph(graph_file, graph_desc_file, self.device_id())
 
     def __load_tf_graph(self, graph_file, graph_desc_file, device_id):
         """A function that loads tensorflow graph and extract runtime infos
@@ -44,7 +45,7 @@ class TFRuntime(Runtime):
 
         # extract key tensors and operatos from tf_graph by graph_desc
         with graph_clone.as_default():
-            with tf.device('/gpu:{}'.format(device_id)):
+            with tf.device(f'/gpu:{device_id}'):
                 tf.import_graph_def(graph_def=graph_def, name="")
             with open(graph_desc_file, 'r') as f:
                 desp = json.load(f)
@@ -52,7 +53,7 @@ class TFRuntime(Runtime):
                     graph_clone.get_operation_by_name(i) for i in desp['inits']
                 ]
                 # TODO: u should make a dict out of feeds
-                feeds = [i for i in desp['feeds']]
+                feeds = list(desp['feeds'])
                 fetches = [
                     graph_clone.get_tensor_by_name(i) for i in desp['fetches']
                 ]

@@ -116,8 +116,7 @@ def SimpleCNN():
     opt = tf.train.GradientDescentOptimizer(0.123456)  # lr
     grads = opt.compute_gradients(loss)
     apply_gradient_op = opt.apply_gradients(grads)
-    session_run_params = {
+    return {
         "init_params": [tf.global_variables_initializer()],
-        "run_params": [apply_gradient_op, loss]
+        "run_params": [apply_gradient_op, loss],
     }
-    return session_run_params

@@ -15,7 +15,7 @@ class Server(Resource):
         '''
         hardware_type, server_name, *__ = name.split('/')[1:]
         if hardware_type != 'server':
-            raise ValueError("Invalid Server name: %s" % name)
+            raise ValueError(f"Invalid Server name: {name}")
         self.__name = name
         self.__server_name = server_name
         self.__hardware = {}  # Computation Hardware dict {name: hardware_obj}
@@ -57,11 +57,11 @@ class Server(Resource):
         # Use a dict instead of using dangerous eval() function
         valid_hardware_type = {'CPU': CPUHardware, 'CPUHardware': CPUHardware,
                                'GPU': GPUHardware, 'GPUHardware': GPUHardware}
-        type_hardware_list = []
-        for name, hardware in self.__hardware.items():
-            if isinstance(hardware, valid_hardware_type[hardware_type]):
-                type_hardware_list.append(hardware)
-        return type_hardware_list
+        return [
+            hardware
+            for name, hardware in self.__hardware.items()
+            if isinstance(hardware, valid_hardware_type[hardware_type])
+        ]
 
     def get_hardware_from_name(self, hardware_name):
         '''Return the hardware whose name is hardware_name, return None if not

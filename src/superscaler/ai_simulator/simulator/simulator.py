@@ -59,8 +59,8 @@ class Simulator():
             device_name = node_metadata.device_name
             if device_name not in self.__devices:
                 raise TypeError(
-                    device_name + " in nodemetadata_list doesn't exist on"
-                    + " device_info")
+                    f"{device_name} in nodemetadata_list doesn't exist on device_info"
+                )
             new_node = Node(node_metadata, self.__devices[device_name])
             self.__nodes.append(new_node)
 
@@ -138,11 +138,7 @@ class Simulator():
     def list_undone_nodes(self):
         '''Return list of undone nodes to check if all nodes have been executed
         '''
-        undone_nodes = []
-        for node in self.__nodes:
-            if not node.is_done():
-                undone_nodes.append(node)
-        return undone_nodes
+        return [node for node in self.__nodes if not node.is_done()]
 
     def __check_if_all_nodes_done(self):
         '''Send a warining if there are nodes haven't been done. Only show the
@@ -153,21 +149,20 @@ class Simulator():
           Index:435    Name:conv0/Relu
           ...
         '''
-        undone_nodes = self.list_undone_nodes()
-        if undone_nodes:
-            not_done_nodes = ''
-            not_done_num = len(undone_nodes)
-            nodes_tmp = '\n  Index:%-6d Name:%s  '
-            warn_tmp = "\nThere are %d/%d nodes haven't been executed:%s"
-            for node in undone_nodes[:10]:
-                not_done_nodes += nodes_tmp \
-                    % (node.get_index(),
-                       node.get_name())
-            if not_done_num > 10:
-                not_done_nodes += '\n  ...'
-            warnings.warn(warn_tmp % (not_done_num,
-                                      len(self.__nodes),
-                                      not_done_nodes))
+        if not (undone_nodes := self.list_undone_nodes()):
+            return
+        not_done_num = len(undone_nodes)
+        nodes_tmp = '\n  Index:%-6d Name:%s  '
+        warn_tmp = "\nThere are %d/%d nodes haven't been executed:%s"
+        not_done_nodes = ''.join(
+            nodes_tmp % (node.get_index(), node.get_name())
+            for node in undone_nodes[:10]
+        )
+        if not_done_num > 10:
+            not_done_nodes += '\n  ...'
+        warnings.warn(warn_tmp % (not_done_num,
+                                  len(self.__nodes),
+                                  not_done_nodes))
 
     def run(self):
         '''Run the simulation'''
@@ -241,13 +236,12 @@ class Simulator():
         '''
         # Add output_tensors attributes
         node['output_tensors'] = []
-        if node['op'] == 'Send' or node['op'] == 'Recv':
-            # Set device_name to NetworkSimulator for send/recv nodes
-            if node['op'] == 'Send':
-                # Check whether tensor_type is valid
-                if not Tensor.check_tensor_type(node['tensor_type']):
-                    raise ValueError("Node have invalid tensor_type")
-                # Add Tensor list
-                node['output_tensors'] = [
-                    Tensor(node['tensor_type'], node['size'])]
+        # Set device_name to NetworkSimulator for send/recv nodes
+        if node['op'] == 'Send':
+            # Check whether tensor_type is valid
+            if not Tensor.check_tensor_type(node['tensor_type']):
+                raise ValueError("Node have invalid tensor_type")
+            # Add Tensor list
+            node['output_tensors'] = [
+                Tensor(node['tensor_type'], node['size'])]
         return node

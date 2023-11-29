@@ -81,18 +81,17 @@ def is_gpu_available():
         Other means not installed
     """
     code = os.system('nvidia-smi')
-    if code == 0:
-        cmd = "nvidia-smi --query-gpu=name --format=csv,noheader | wc -l"
-        count = subprocess.check_output(cmd, shell=True)
-        return int(count) > 0
-    else:
+    if code != 0:
         return False
+    cmd = "nvidia-smi --query-gpu=name --format=csv,noheader | wc -l"
+    count = subprocess.check_output(cmd, shell=True)
+    return int(count) > 0
 
 
 def test_runtime():
     def func(rank):
         try:
-            plan_path = 'data/plan_' + rank + '.json'
+            plan_path = f'data/plan_{rank}.json'
             plan_path = os.path.join(os.path.dirname(__file__),
                                      plan_path)
 

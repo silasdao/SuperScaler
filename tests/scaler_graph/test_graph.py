@@ -58,14 +58,14 @@ def test_insert_node():
     sc_graph.remove_edge(edge)
 
     sc_op = operator.AllreduceOp()
-    input_node_idxes = []
-    input_node_idxes.append((edge.src_node, edge.src_idx))
-    attrs = {}
-    attrs["tensor_name"] = edge.src_node.name + "_allreduce"
-    attrs["T"] = edge.src_node.attrs["T"]
-    attrs["reduction"] = "sum"
-    attrs["num_devices"] = "2"
-    node_name = edge.src_node.name + "_allreduce"
+    input_node_idxes = [(edge.src_node, edge.src_idx)]
+    attrs = {
+        "tensor_name": f"{edge.src_node.name}_allreduce",
+        "T": edge.src_node.attrs["T"],
+        "reduction": "sum",
+        "num_devices": "2",
+    }
+    node_name = f"{edge.src_node.name}_allreduce"
     node = sc_graph.add_node_and_edge(node_name, sc_op, input_node_idxes, 1,
                                       attrs)
     sc_graph.add_edge(node, 0, edge.dest_node, edge.dest_idx)

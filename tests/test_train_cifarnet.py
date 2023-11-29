@@ -18,12 +18,11 @@ def is_gpu_available():
         Other means not installed
     """
     code = os.system('nvidia-smi')
-    if code == 0:
-        cmd = "nvidia-smi --query-gpu=name --format=csv,noheader | wc -l"
-        count = subprocess.check_output(cmd, shell=True)
-        return int(count) > 0
-    else:
+    if code != 0:
         return False
+    cmd = "nvidia-smi --query-gpu=name --format=csv,noheader | wc -l"
+    count = subprocess.check_output(cmd, shell=True)
+    return int(count) > 0
 
 
 def test_train_cifarnet():
@@ -34,8 +33,6 @@ def test_train_cifarnet():
     session_run_params = cifarnet.model()
     dataset_paths = cifarnet.get_dataset_paths()
     strategy = DataParallelism(range(2))
-    deployment_setting = {"1": "localhost"}
-    communication_DSL = "ring"
     resource_pool = os.path.join(os.path.dirname(__file__), 'plan_gen', 'data',
                                  'resource_pool.yaml')
 
@@ -49,6 +46,8 @@ def test_train_cifarnet():
     args.print_fetches_targets = True
 
     if is_gpu_available():
+        deployment_setting = {"1": "localhost"}
+        communication_DSL = "ring"
         # Init Superscaler_TF class
         sc.init(session_run_params, deployment_setting, strategy,
                 communication_DSL, resource_pool, dataset_paths)

@@ -51,7 +51,7 @@ def __set_device_info(graph_def):
         support_GPU = False
         kernel_list = kernels.get_registered_kernels_for_op(tf_node.op)
         if len(kernel_list.kernel) < 1:
-            logger().error("no kernel for operator: %s" % (tf_node.op))
+            logger().error(f"no kernel for operator: {tf_node.op}")
             raise RuntimeError
         for kernel in kernel_list.kernel:
             is_suitable = True
@@ -77,10 +77,7 @@ def __set_device_info(graph_def):
     # Heuristic A
     for tf_node in graph_def.node:
         for input in tf_node.input:
-            if input.startswith("^"):
-                name = input[1:]
-            else:
-                name = input.split(":")[0]
+            name = input[1:] if input.startswith("^") else input.split(":")[0]
             if name_to_node[name] in no_input_nodes:
                 name_to_node[name].device = tf_node.device
 
@@ -148,21 +145,21 @@ def __from_attr_proto(attr_value):
     elif field_name == "list":
         list_value = attr_value.list
         if len(list_value.s) != 0:
-            return [value for value in list_value.s]
+            return list(list_value.s)
         elif len(list_value.i) != 0:
-            return [value for value in list_value.i]
+            return list(list_value.i)
         elif len(list_value.f) != 0:
-            return [value for value in list_value.f]
+            return list(list_value.f)
         elif len(list_value.b) != 0:
-            return [value for value in list_value.b]
+            return list(list_value.b)
         elif len(list_value.type) != 0:
             return [tf.as_dtype(value) for value in list_value.type]
         elif len(list_value.shape) != 0:
             return [tensor_shape.as_shape(value) for value in list_value.shape]
         elif len(list_value.tensor) != 0:
-            return [value for value in list_value.tensor]
+            return list(list_value.tensor)
         elif len(list_value.func) != 0:
-            return [value for value in list_value.func]
+            return list(list_value.func)
         else:
             return []
 
@@ -181,9 +178,7 @@ def import_graph_from_tf_pbtxts(file_paths, tf_runtime_config):
     for file_path in file_paths[1:]:
         google.protobuf.text_format.Merge(
             Path(file_path).read_text(), tf_graph_def)
-    sc_graph = __import_graph_from_tf_graph_def(tf_graph_def,
-                                                tf_runtime_config)
-    return sc_graph
+    return __import_graph_from_tf_graph_def(tf_graph_def, tf_runtime_config)
 
 
 def __import_graph_from_tf_graph_def(tf_graph_def, tf_runtime_config):
@@ -224,7 +219,7 @@ def __import_graph_from_tf_graph_def(tf_graph_def, tf_runtime_config):
         '''
         obj = re.match("^_.*$", name)
         if obj is not None:
-            name = "sc" + name
+            name = f"sc{name}"
         return name
 
     def add_sc_node(sc_graph, tf_node, name_to_node):
@@ -244,7 +239,7 @@ def __import_graph_from_tf_graph_def(tf_graph_def, tf_runtime_config):
                 index = -1
             else:
                 names = input.split(":")
-                assert len(names) == 1 or len(names) == 2
+                assert len(names) in {1, 2}
                 # check data edge name
                 names[0] = add_sc_before_underscore(names[0])
                 if sc_graph.get_node_by_name(names[0]) is not None:
@@ -252,10 +247,7 @@ def __import_graph_from_tf_graph_def(tf_graph_def, tf_runtime_config):
                 else:
                     add_sc_node(name_to_node[names[0]])
                     input_node = sc_graph.get_node_by_name(names[0])
-                if len(names) == 1:
-                    index = 0
-                else:
-                    index = int(names[1])
+                index = 0 if len(names) == 1 else int(names[1])
             input_node_idxes.append((input_node, index))
         attrs = {
             attr_name: __from_attr_proto(tf_node.attr[attr_name])
@@ -306,11 +298,7 @@ def get_tf_runtime_config(sc_graph):
     targets: nodes without output, for backtracing all nodes needed to perform.
         e.g.: all applygradient ops, send op
     '''
-    tf_runtime_config = {}
-    tf_runtime_config["inits"] = []  # for all assign op
-    tf_runtime_config["feeds"] = []  # no need now. it's for training data.
-    tf_runtime_config["fetches"] = []  # the successor node of _Retval
-    tf_runtime_config["targets"] = []  # send or final
+    tf_runtime_config = {"inits": [], "feeds": [], "fetches": [], "targets": []}
     for sc_node in graph_util.get_output_nodes(sc_graph):
         node_runtime_config = sc_node.attrs["sc_metadata"]["runtime_config"]
         if node_runtime_config["init"]:
@@ -392,7 +380,7 @@ def __sc_attrs_to_tf_attrs_proto(op_def, op_type_name, attrs):
             continue
         if attr_def.type.startswith("list("):
             if not _IsListValue(value):
-                logger().error("Expected list for attr " + key)
+                logger().error(f"Expected list for attr {key}")
                 raise TypeError
             if attr_def.has_minimum:
                 if len(value) < attr_def.minimum:
@@ -435,8 +423,8 @@ def __sc_attrs_to_tf_attrs_proto(op_def, op_type_name, attrs):
                         raise ValueError
         elif attr_def.type == "int":
             attr_value.i = _MakeInt(value, key)
-            if attr_def.has_minimum:
-                if attr_value.i < attr_def.minimum:
+            if attr_value.i < attr_def.minimum:
+                if attr_def.has_minimum:
                     logger().error(
                         "Attr '%s' of '%s' Op passed %d less than minimum %d."
                         % (key, op_type_name, attr_value.i, attr_def.minimum))
@@ -473,7 +461,7 @@ def __sc_attrs_to_tf_attrs_proto(op_def, op_type_name, attrs):
                 value.add_to_graph(tf.get_default_graph())
                 attr_value.func.name = value.name
         else:
-            logger().error("Unrecognized Attr type " + attr_def.type)
+            logger().error(f"Unrecognized Attr type {attr_def.type}")
             raise TypeError
 
         attr_protos[key] = attr_value
@@ -485,11 +473,11 @@ def export_graph_to_tf_file(sc_graph, file_path=None):
     TODO(gbxu): the library file path should be configurable.
     '''
     proj_path = os.environ["SUPERSCLAR_PATH"]
-    lib_path = proj_path + "/lib/libsuperscaler_pywrap.so"
+    lib_path = f"{proj_path}/lib/libsuperscaler_pywrap.so"
     if os.path.exists(lib_path):
         tf.load_library(lib_path)
     else:
-        logger().error("The library file %s does not exist." % (lib_path))
+        logger().error(f"The library file {lib_path} does not exist.")
         raise RuntimeError
     tf_graph = tf.Graph()
     graph_def = tf_graph.as_graph_def(add_shapes=True)
@@ -501,7 +489,7 @@ def export_graph_to_tf_file(sc_graph, file_path=None):
         attrs = {
             name: value
             for name, value in sc_node.attrs.items()
-            if name != "tf" and name != "sc_metadata"
+            if name not in ["tf", "sc_metadata"]
         }
         tf_node = graph_def.node.add()
         tf_node.name = sc_node.name
@@ -558,13 +546,9 @@ def import_tensorflow_model(session_run_params,
     Returns:
         A SC Graph.
     '''
-    tf_runtime_config = {}
-    tf_runtime_config["inits"] = []  # all assign op, dataset initializer
-    tf_runtime_config["feeds"] = []  # no need now. it's for training data.
-    tf_runtime_config["fetches"] = []  # the successor node of _Retval
-    tf_runtime_config["targets"] = []  # send or final
+    tf_runtime_config = {"inits": [], "feeds": [], "fetches": [], "targets": []}
     for init_op in session_run_params["init_params"]:
-        if isinstance(init_op, Operation) or isinstance(init_op, Tensor):
+        if isinstance(init_op, (Operation, Tensor)):
             tf_runtime_config["inits"].append(
                 init_op.name.split(":")[0])  # op_name only
         else:
@@ -587,9 +571,9 @@ def import_tensorflow_model(session_run_params,
         ])
     if reset_default_graph:
         tf.reset_default_graph()
-    sc_graph = __import_graph_from_tf_graph_def(pruned_graph_def,
-                                                tf_runtime_config)
-    return sc_graph
+    return __import_graph_from_tf_graph_def(
+        pruned_graph_def, tf_runtime_config
+    )
 
 
 def set_dataset_paths(graph, paths):
@@ -615,5 +599,4 @@ def set_dataset_paths(graph, paths):
                     paths[idx], 'string_val')
                 count += 1
     assert (count == len(paths))
-    graph_pbtxt = google.protobuf.text_format.MessageToString(tf_graph_def)
-    return graph_pbtxt
+    return google.protobuf.text_format.MessageToString(tf_graph_def)

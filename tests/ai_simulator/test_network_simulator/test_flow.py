@@ -46,12 +46,19 @@ def create_test_flow(index, node_name, device_name, tensor_size, time_now):
     # Initialize output_tensors
     o_tensors = [Tensor("DT_INT32", 1) for _ in range(tensor_size)]
     # Initialize node metadata
-    nodes_metadata = []
-    nodes_metadata.append(NodeMetadata(index=index, op="send", name=node_name,
-                                       device_name=device_name,
-                                       output_tensors=o_tensors,
-                                       execution_time=10, input_ids=[],
-                                       dependency_ids=[], successor_ids=[]))
+    nodes_metadata = [
+        NodeMetadata(
+            index=index,
+            op="send",
+            name=node_name,
+            device_name=device_name,
+            output_tensors=o_tensors,
+            execution_time=10,
+            input_ids=[],
+            dependency_ids=[],
+            successor_ids=[],
+        )
+    ]
     device = FIFODevice(device_name)
     node = Node(nodes_metadata[-1], device)
     return Flow(node, time_now)

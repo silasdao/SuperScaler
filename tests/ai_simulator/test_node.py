@@ -40,7 +40,6 @@ def test_node_module():
     with pytest.raises(NodeException):
         Node(node_metadata, device)
 
-    testnodes = {}
     # Generate independent node
     node_metadata = NodeMetadata(
         index=3, op="add_op", name="add_2",
@@ -48,8 +47,7 @@ def test_node_module():
         execution_time=10, input_ids=[], dependency_ids=[],
         successor_ids=[4, 5])
     node = Node(node_metadata, FIFODevice("GPU:0"))
-    testnodes['independency'] = node
-
+    testnodes = {'independency': node}
     # Generate dependent node
     node_metadata = NodeMetadata(
         index=3, op="add_op", name="add_1",

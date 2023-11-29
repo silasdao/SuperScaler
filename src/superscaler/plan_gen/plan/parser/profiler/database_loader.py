@@ -44,11 +44,10 @@ class DatabaseLoader():
         '''
         final_str = '['
         if len(input_shape) > 0:
-            final_str = final_str + str(input_shape[0])
+            final_str += str(input_shape[0])
         for i in range(1, len(input_shape)):
-            final_str = final_str + ',' + str(input_shape[i])
-        final_str = final_str + ']'
-        return final_str
+            final_str = f'{final_str},{str(input_shape[i])}'
+        return f'{final_str}]'
 
     def __gen_universal_key(self, op, input_shape_list, attr_list):
         '''
@@ -103,9 +102,7 @@ class DatabaseLoader():
         '''
         key = self.__gen_universal_key(op, input_shape_list, attr_list)
         value = self.__db_backend.get(key)
-        if value is None:
-            return DB_RETVAL_KEY_NOT_FOUND
-        return value
+        return DB_RETVAL_KEY_NOT_FOUND if value is None else value
 
     def add_record(self, op, input_shape_list, attr_list, result_dict):
         '''

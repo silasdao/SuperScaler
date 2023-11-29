@@ -28,12 +28,12 @@ class Parallelizer:
         for parallelism in self.parallelisms:
             for graph in self.graphs:
                 if not parallelism.run_on_graph(graph):
-                    logger().error("failed when %s runs on a graph." %
-                                   (parallelism.__class__.__name__))
+                    logger().error(
+                        f"failed when {parallelism.__class__.__name__} runs on a graph."
+                    )
                     raise RuntimeError
             self.graphs = parallelism.parallel_graphs
-            logger().info("Run %s : successed." %
-                          (parallelism.__class__.__name__))
+            logger().info(f"Run {parallelism.__class__.__name__} : successed.")
 
         self.finalize()
 

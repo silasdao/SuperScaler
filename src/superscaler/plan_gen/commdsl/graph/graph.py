@@ -57,7 +57,7 @@ class CommGraph:
             node (Node)
         """
         count = self.get_node_count(conds=dict(op=node.op))
-        node.name = node.op.value + '_' + str(count)
+        node.name = f'{node.op.value}_{str(count)}'
         self.nodes.append(node)
 
     def remove_op(self, node, update_graph=True):
@@ -99,7 +99,7 @@ class CommGraph:
         root = 0  # root is an empty start node
         for nid, node in enumerate(self.nodes):
             no_dependency = True
-            for prev_nid, prev_node in enumerate(self.nodes[0:nid]):
+            for prev_nid, prev_node in enumerate(self.nodes[:nid]):
                 if node.depend_on(prev_node):
                     adj[prev_nid, nid] = 1
                     no_dependency = False
@@ -221,18 +221,16 @@ class CommGraph:
         if last is None:
             last = self.nodes[-1]
         elif last not in self.nodes:
-            raise CommDSLRuntimeError(
-                "Node {} doesn't find in the graph".format(last))
+            raise CommDSLRuntimeError(f"Node {last} doesn't find in the graph")
         if conds is None:
             return self.nodes.index(last) + 1
-        else:
-            count = 0
-            for iter_node in self.nodes:
-                if iter_node.match_conds(conds):
-                    count += 1
-                if iter_node == last:
-                    break
-            return count
+        count = 0
+        for iter_node in self.nodes:
+            if iter_node.match_conds(conds):
+                count += 1
+            if iter_node == last:
+                break
+        return count
 
     def get_node(self, count, conds=None):
         """
@@ -256,15 +254,12 @@ class CommGraph:
                 "Try to find a node out of boundary")
         if conds is None:
             return self.nodes[count]
-        else:
-            for node in self.nodes[1:]:
-                if node.match_conds(conds):
-                    count -= 1
-                if count == 0:
-                    break
-            if count != 0:
-                return None
-            return node
+        for node in self.nodes[1:]:
+            if node.match_conds(conds):
+                count -= 1
+            if count == 0:
+                break
+        return None if count != 0 else node
 
     def __repr__(self):
         """
@@ -279,7 +274,7 @@ class CommGraph:
         """
         strs = 'partial op list: '
         for idx, node in enumerate(self.nodes):
-            strs += '\n{}: {}'.format(idx, node)
+            strs += f'\n{idx}: {node}'
         if self.__adj is not None:
             coo_matrix = spsp.coo_matrix(self.__adj)
             row, col = coo_matrix.row, coo_matrix.col

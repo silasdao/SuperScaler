@@ -53,13 +53,9 @@ class GPURoundRobinMapper(PlanMapper):
     def map(self, node_list):
         if not isinstance(node_list, NodeList):
             return None
-        else:
-            mapped_node_list = copy.deepcopy(node_list)
-            self._reset_route_info()
-            if not self.__assign_device(mapped_node_list):
-                return None
-            else:
-                return mapped_node_list
+        mapped_node_list = copy.deepcopy(node_list)
+        self._reset_route_info()
+        return None if not self.__assign_device(mapped_node_list) else mapped_node_list
 
     def __assign_device(self, node_list):
         ''' This function assigns the virtual devices of node_list

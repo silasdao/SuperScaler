@@ -40,16 +40,15 @@ class Link(Resource):
     def to_dict(self):
         '''Return a dict containing all essential data
         '''
-        info_dict = {
+        return {
             'source_name': self.__source_hardware,
             'dest_name': self.__dest_hardware,
-            'capacity': str(self.__capacity) + 'bps',
+            'capacity': f'{str(self.__capacity)}bps',
             'latency': self.__latency,
             'scheduler': self.__scheduler,
             'link_type': self.__link_type,
-            'link_id': self.__link_id
+            'link_id': self.__link_id,
         }
-        return info_dict
 
     @property
     def source_hardware(self):

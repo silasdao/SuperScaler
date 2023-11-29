@@ -10,7 +10,7 @@ def get_communication_plan(path, device_count):
     # Parser communication_plan from path
     communication_plan = []
     for i in range(device_count):
-        sub_path = os.path.join(path, "superscaler_" + str(i) + ".json")
+        sub_path = os.path.join(path, f"superscaler_{str(i)}.json")
         plan = json.load(open(sub_path, 'r'))
         communication_plan.append(plan)
     return communication_plan

@@ -52,30 +52,15 @@ class PlanGenerator():
             plan_type: string, e.g. Default
             plan_name: string, e.g. Default_Plan
         '''
-        execution_plan =\
-            self.__planmanager.get_execution_plan(self.__nodelist,
-                                                  plan_type,
-                                                  plan_name)
-
-        return execution_plan
+        return self.__planmanager.get_execution_plan(
+            self.__nodelist, plan_type, plan_name
+        )
 
     def get_links_info(self):
-        # Generate Link info
-        links_info = self.__resource_pool.get_links_as_list()
-
-        return links_info
+        return self.__resource_pool.get_links_as_list()
 
     def get_routing_info(self):
-        # Generate all routing info
-        # Note the get_routing_info() function should be called after
-        # the get_execution_plan() function, otherwise the routing_info
-        # is empty
-        routing_info = self.__mapper.route_info
-
-        return routing_info
+        return self.__mapper.route_info
 
     def get_device_info(self):
-        # Generate devices info
-        device_info = self.__resource_pool.get_computational_hardware_as_list()
-
-        return device_info
+        return self.__resource_pool.get_computational_hardware_as_list()

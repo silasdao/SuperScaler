@@ -60,8 +60,8 @@ class RingAllreducePlan(AllreducePlan):
         for index in range(nRanks - 1):
             # Generate send node for scatter-reduce
 
-            node_name = node.name + '_scatter_send_' + str(index)
-            target_name = node.name + '_scatter_recv_' + str(index)
+            node_name = f'{node.name}_scatter_send_{str(index)}'
+            target_name = f'{node.name}_scatter_recv_{str(index)}'
             self._generate_node(node_index=node_index,
                                 node_name=node_name,
                                 input_name=input_name,
@@ -77,8 +77,8 @@ class RingAllreducePlan(AllreducePlan):
             sendIndex = (sendIndex + nRanks - 1) % nRanks
 
             # Generate recv node for scatter-reduce
-            node_name = node.name + '_scatter_recv_' + str(index)
-            target_name = node.name + '_scatter_send_' + str(index)
+            node_name = f'{node.name}_scatter_recv_{str(index)}'
+            target_name = f'{node.name}_scatter_send_{str(index)}'
             self._generate_node(node_index=node_index,
                                 node_name=node_name,
                                 input_name=input_name,
@@ -97,8 +97,8 @@ class RingAllreducePlan(AllreducePlan):
         # Finally all GPUs will get reduced gradients
         for index in range(nRanks - 1):
             # Generate send node for allgather
-            node_name = node.name + '_allgather_send_' + str(index)
-            target_name = node.name + '_allgather_recv_' + str(index)
+            node_name = f'{node.name}_allgather_send_{str(index)}'
+            target_name = f'{node.name}_allgather_recv_{str(index)}'
             self._generate_node(node_index=node_index,
                                 node_name=node_name,
                                 input_name=input_name,
@@ -114,8 +114,8 @@ class RingAllreducePlan(AllreducePlan):
             sendIndex = (sendIndex + nRanks - 1) % nRanks
 
             # Generate recv node for allgather
-            node_name = node.name + '_allgather_recv_' + str(index)
-            target_name = node.name + '_allgather_send_' + str(index)
+            node_name = f'{node.name}_allgather_recv_{str(index)}'
+            target_name = f'{node.name}_allgather_send_{str(index)}'
             self._generate_node(node_index=node_index,
                                 node_name=node_name,
                                 input_name=input_name,

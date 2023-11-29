@@ -45,16 +45,14 @@ class DatabaseBackendLocalFile(DatabaseBackend):
         Args:
             db_file_path:    The path of database file.
         '''
-        # Check whether db_file_path is correct and existing
         if not isinstance(db_file_path, str):
             raise DatabaseBackendException(
                 'DatabaseBackendLocalFile can only init from local file')
-        else:
-            db_file_dir = os.path.dirname(db_file_path)
-            if not os.path.exists(db_file_dir):
-                raise DatabaseBackendException(
-                    'database initialization failure for invalid path: %s' %
-                    (db_file_dir))
+        db_file_dir = os.path.dirname(db_file_path)
+        if not os.path.exists(db_file_dir):
+            raise DatabaseBackendException(
+                f'database initialization failure for invalid path: {db_file_dir}'
+            )
         self.__db_file_path = db_file_path
         self.__database = {}
         self.__loadDatabaseFile()
@@ -88,6 +86,4 @@ class DatabaseBackendLocalFile(DatabaseBackend):
         self.__database.pop(key)
 
     def get(self, key):
-        if key in self.__database:
-            return self.__database[key]
-        return None
+        return self.__database[key] if key in self.__database else None

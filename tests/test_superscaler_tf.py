@@ -20,12 +20,11 @@ def is_gpu_available():
         Other means not installed
     """
     code = os.system('nvidia-smi')
-    if code == 0:
-        cmd = "nvidia-smi --query-gpu=name --format=csv,noheader | wc -l"
-        count = subprocess.check_output(cmd, shell=True)
-        return int(count) > 0
-    else:
+    if code != 0:
         return False
+    cmd = "nvidia-smi --query-gpu=name --format=csv,noheader | wc -l"
+    count = subprocess.check_output(cmd, shell=True)
+    return int(count) > 0
 
 
 def test_superscaler_tf():
@@ -36,8 +35,6 @@ def test_superscaler_tf():
     # Init parameters
     session_run_params = dummy_model.SimpleCNN()
     strategy = DataParallelism(range(2))
-    deployment_setting = {"1": "localhost"}
-    communication_DSL = "ring"
     resource_pool = os.path.join(
         os.path.dirname(__file__), 'plan_gen', 'data', 'resource_pool.yaml')
 
@@ -51,6 +48,8 @@ def test_superscaler_tf():
     args.print_fetches_targets = True
 
     if is_gpu_available():
+        deployment_setting = {"1": "localhost"}
+        communication_DSL = "ring"
         # Check for wrong input
         with pytest.raises(SuperscalerError):
             # Wrong session_run_params

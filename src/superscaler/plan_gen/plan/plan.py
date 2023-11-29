@@ -45,10 +45,7 @@ class Plan(object):
         Args:
             node_list: list
         '''
-        if not isinstance(node_list, list):
-            self.__node_list = None
-        else:
-            self.__node_list = NodeList(node_list)
+        self.__node_list = NodeList(node_list) if isinstance(node_list, list) else None
 
     def generate_plan(self):
         ''' Main function, will be overloadding by child class

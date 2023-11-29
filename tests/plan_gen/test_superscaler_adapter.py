@@ -23,7 +23,8 @@ def test_plan_adapter_for_superscaler():
     adapter.dump_plan(output_path, 'superscaler')
     output_ref = []
     for i in range(len(output_plan)):
-        path_output = os.path.join(os.path.dirname(__file__),
-                                   "data/superscaler" + str(i) + ".json")
+        path_output = os.path.join(
+            os.path.dirname(__file__), f"data/superscaler{str(i)}.json"
+        )
         output_ref.append(json.load(open(path_output, 'r')))
     assert(output_plan == output_ref)

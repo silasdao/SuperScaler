@@ -65,7 +65,7 @@ class Graph:
         '''Add a node into this graph, including all edges to it.
         '''
         if self.get_node_by_name(node_name) is not None:
-            logger().error("node %s is exising." % (node_name))
+            logger().error(f"node {node_name} is exising.")
             raise RuntimeError
         self._STALE_COLLECTIONS = True
         self._STALE_ORDERED_NODES = True
@@ -132,7 +132,6 @@ class Graph:
         else:
             # TODO(gbxu): update collections
             self._STALE_COLLECTIONS = False
-            pass
 
     def infer_shape(self):
         for node in self.ordered_nodes:

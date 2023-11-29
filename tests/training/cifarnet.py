@@ -137,10 +137,9 @@ def get_dataset_paths():
         ...
     }
     """
-    dataset_paths = {
+    return {
         "localhost": [
             ["/tmp/sc_test/cifar10/cifar10_train_0.tfrecord"],
             ["/tmp/sc_test/cifar10/cifar10_train_1.tfrecord"],
         ]
     }
-    return dataset_paths

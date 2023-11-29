@@ -16,12 +16,11 @@ def is_cuda_available():
     Other codes mean not installed
     """
     code = os.system('nvidia-smi')
-    if code == 0:
-        cmd = "nvidia-smi --query-gpu=name --format=csv,noheader | wc -l"
-        count = subprocess.check_output(cmd, shell=True)
-        return int(count) > 0
-    else:
+    if code != 0:
         return False
+    cmd = "nvidia-smi --query-gpu=name --format=csv,noheader | wc -l"
+    count = subprocess.check_output(cmd, shell=True)
+    return int(count) > 0
 
 
 def test_tf_adapter():

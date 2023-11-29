@@ -112,7 +112,7 @@ class TFParser(DAGParser):
 
             if self.__Profiler is not None:
                 execution_time =\
-                    self.__Profiler.get_node_execution_time(profiling_data)
+                        self.__Profiler.get_node_execution_time(profiling_data)
             else:
                 execution_time = None
 
@@ -120,19 +120,14 @@ class TFParser(DAGParser):
             if execution_time is not None and 'avg' in execution_time:
                 node['execution_time'] = execution_time['avg']
 
-        filtered_node_list = self.__filter_node_list(node_list)
-        return filtered_node_list
+        return self.__filter_node_list(node_list)
 
     def __filter_node_list(self, node_list):
         '''
         Filter all nodes in node_list
         Return the filtered node_list
         '''
-        filtered_node_list = []
-
-        for node in node_list:
-            filtered_node_list.append(self.__filter_node(node))
-
+        filtered_node_list = [self.__filter_node(node) for node in node_list]
         self.__unify_dependency(filtered_node_list)
 
         return filtered_node_list
@@ -179,7 +174,7 @@ class TFParser(DAGParser):
                 input_str = input_str.replace('^', '')
                 # remove :1 in the end
                 if ':' in input_str:
-                    input_str = input_str[0:input_str.index(':')]
+                    input_str = input_str[:input_str.index(':')]
                 inputs.append(input_str)
             node['input'] = inputs
 
@@ -191,12 +186,9 @@ class TFParser(DAGParser):
         graph_content: string description of graph
         '''
         try:
-            graph_def = text_format.Parse(graph_content,
-                                          tf.compat.v1.GraphDef())
-            return graph_def
+            return text_format.Parse(graph_content, tf.compat.v1.GraphDef())
         except text_format.ParseError as e:
-            raise ParserError("Cannot parse description: %s." %
-                              (str(e)))
+            raise ParserError(f"Cannot parse description: {str(e)}.")
         return graph_def
 
     @staticmethod
@@ -206,17 +198,13 @@ class TFParser(DAGParser):
         Return the protobuf
         filename: path to protobuf
         '''
-        graph_def = None
         with open(filename, 'r') as f:
             file_content = f.read()
             try:
-                graph_def = text_format.Parse(file_content,
-                                              tf.compat.v1.GraphDef())
-                return graph_def
+                return text_format.Parse(file_content, tf.compat.v1.GraphDef())
             except text_format.ParseError as e:
-                raise ParserError("Cannot parse file %s: %s." %
-                                  (filename, str(e)))
-        return graph_def
+                raise ParserError(f"Cannot parse file {filename}: {str(e)}.")
+        return None
 
     @staticmethod
     def __unify_op_name(op):
@@ -227,9 +215,9 @@ class TFParser(DAGParser):
         '''
         if 'allreduce' in op.lower():
             return 'Allreduce'
-        elif 'send' == op.lower():
+        elif op.lower() == 'send':
             return 'Send'
-        elif 'recv' == op.lower():
+        elif op.lower() == 'recv':
             return 'Recv'
         else:
             return op
@@ -314,7 +302,7 @@ class TFParser(DAGParser):
                 # For tensorflow, :1 indicates which output tensor to use
                 # We parse the index directly
                 index = int(input_str[input_str.index(':')+1:])
-                input_str = input_str[0:input_str.index(':')]
+                input_str = input_str[:input_str.index(':')]
             else:
                 # 0 is the default option
                 index = 0
@@ -332,20 +320,18 @@ class TFParser(DAGParser):
         the same node name and device with the current node.
         """
 
-        # create a code_book for input_shape
-        input_shapes_dict = {}
-        for node in profiling_data_list:
-            input_shapes_dict[(node['name'], node['device'])] = \
-                node['output_shapes']
-
+        input_shapes_dict = {
+            (node['name'], node['device']): node['output_shapes']
+            for node in profiling_data_list
+        }
         # introduce input_shape to node
         for node in profiling_data_list:
             input_shapes = []
 
             for input_, index_ in zip(node['input'], node['input_index']):
                 if (input_, node['device']) in input_shapes_dict and \
-                   index_ >= 0 and \
-                   index_ < len(input_shapes_dict[(input_, node['device'])]):
+                       index_ >= 0 and \
+                       index_ < len(input_shapes_dict[(input_, node['device'])]):
                     input_shapes.append(
                         input_shapes_dict[(input_, node['device'])][index_])
                 else:
@@ -424,8 +410,8 @@ class TFNodeAttrParser():
 
         if not isinstance(node, node_def_pb2.NodeDef):
             raise ParserError(
-                'Node initialization failure for wrong input foramt: %s' %
-                str(type(node)))
+                f'Node initialization failure for wrong input foramt: {str(type(node))}'
+            )
 
         attrs = {}
         if not hasattr(node, 'attr'):
@@ -449,18 +435,12 @@ class TFNodeAttrParser():
         value_list:  If True, treat raw_attr_value as a list.
                      If False, treat raw_attr_value as a attr.
         '''
-        if value_list is True:
-            value = []
-        else:
-            value = None
+        value = [] if value_list is True else None
         fields_name = []
 
         if not hasattr(raw_attr_value, 'ListFields'):
             raise ParserError("Faild to find ListFields from raw_attr_value")
-        for field in raw_attr_value.ListFields():
-            name = field[0].name
-            fields_name.append(name)
-
+        fields_name.extend(field[0].name for field in raw_attr_value.ListFields())
         if 's' in fields_name:
             if value_list is True:
                 for itr in raw_attr_value.s:
@@ -492,10 +472,7 @@ class TFNodeAttrParser():
                     else:
                         value.append(0)
             else:
-                if raw_attr_value.b is True:
-                    value = 1
-                else:
-                    value = 0
+                value = 1 if raw_attr_value.b is True else 0
         elif 'type' in fields_name:
             if value_list is True:
                 for itr in raw_attr_value.type:
@@ -527,9 +504,8 @@ class TFNodeAttrParser():
             if in_str_format is True and len(value) > 0:
                 for i in range(len(value)):
                     value[i] = str(value[i])
-        else:
-            if in_str_format is True and value is not None:
-                value = str(value)
+        elif in_str_format is True and value is not None:
+            value = str(value)
 
         return value
 
@@ -556,7 +532,7 @@ class TFNodeAttrParser():
         value = []
 
         for field in raw_tensor_value.ListFields():
-            if 'dtype' == field[0].name:
+            if field[0].name == 'dtype':
                 value.append(raw_tensor_value.dtype)
                 break
         if not value:

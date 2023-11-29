@@ -12,10 +12,8 @@ def parse_info(sc_op, tf_op_def):
         for index, input_arg in enumerate(tf_op_def.input_arg):
             if input_arg.name == "var":
                 sc_op.info["parameter_index"] = index
-            elif input_arg.name == "grad" or input_arg.name == "delta":
+            elif input_arg.name in ["grad", "delta"]:
                 sc_op.info["gradient_index"] = index
-            elif input_arg.is_ref:
-                pass
     else:
         logger().debug(
             "op: %s of tensorflow uses default operator, OpDef structure:\n%s"
@@ -103,8 +101,7 @@ def tf_op_map_to_sc_op(tf_op_def):
 
 def convert_to_tf_node(sc_node):
     if sc_node.op.name == "AllreduceOp" and sc_node.op.original_name is None:
-        sc_node.attrs["tf"] = {}
-        sc_node.attrs["tf"]["device"] = ""
+        sc_node.attrs["tf"] = {"device": ""}
         sc_node.op.original_name = "_SCAllReduce"
         return True
     return False
