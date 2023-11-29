@@ -20,14 +20,14 @@ class NNFTrainer:
         self.rt.init(plan_file_path)
         self.device_id = self.rt.device_id()
         self.world_size = self.rt.world_size()
-        self.cuda_device_id = 'cuda:' + str(self.rt.device_id())
+        self.cuda_device_id = f'cuda:{str(self.rt.device_id())}'
         print("i am running @ local device: ", self.cuda_device_id)
         self.cuda_device = torch.device(self.cuda_device_id)
         torch.cuda.set_device(self.cuda_device)
 
         self.parambyid = dict()
         # lastid = 0
-        paramlist = list()
+        paramlist = []
         # siglist = list()
         self.loss_id = 0
         self.inputs_name_id = dict()
@@ -80,11 +80,10 @@ class NNFTrainer:
             (shape, dtype) = self.parambyid[key]
             if dtype == "float":
                 dtype = torch.float
+            elif dtype == "int64_t":
+                dtype = torch.int64
             else:
-                if dtype == "int64_t":
-                    dtype = torch.int64
-                else:
-                    raise Exception("Dtype is not suppported: %s" % (dtype))
+                raise Exception(f"Dtype is not suppported: {dtype}")
             param = torch.ones(shape, dtype=dtype, device=self.cuda_device)
             # if key in self.weight_ids:
             #     torch.nn.init.uniform_(param)
@@ -137,12 +136,10 @@ class NaiveBertDataLoader:
                 (shape, dtype) = trainer.parambyid[val]
                 if dtype == "float":
                     dtype = torch.float
+                elif dtype == "int64_t":
+                    dtype = torch.int64
                 else:
-                    if dtype == "int64_t":
-                        dtype = torch.int64
-                    else:
-                        raise Exception(
-                            "Dtype is not suppported: %s" % (dtype))
+                    raise Exception(f"Dtype is not suppported: {dtype}")
                 inputs[val] = torch.ones(
                     shape, dtype=dtype, device=trainer.cuda_device)
 
@@ -158,10 +155,8 @@ if __name__ == "__main__":
         raise Exception('no plan is given')
     trainer = NNFTrainer(sys.argv[1])
     data = NaiveBertDataLoader(trainer.device_id, trainer.world_size)
-    i = 1
-    for batch in data.data:
+    for i, batch in enumerate(data.data, start=1):
         print(i)
-        i += 1
         data.interation(batch, trainer)
     trainer.save()
     trainer.finish()

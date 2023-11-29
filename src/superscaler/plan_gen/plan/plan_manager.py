@@ -41,7 +41,4 @@ class PlanManager(object):
 
         mapped_plan = self.__plan_mapper.map(output_plan)
         # None output of map function means something goes wrong
-        if mapped_plan is None:
-            return None
-
-        return mapped_plan
+        return None if mapped_plan is None else mapped_plan

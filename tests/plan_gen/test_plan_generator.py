@@ -22,7 +22,7 @@ def test_plan_generator():
     def get_graph_paths(path, device_count):
         graph_paths = []
         for i in range(device_count):
-            sub_path = os.path.join(path, "run_" + str(i) + ".pbtxt")
+            sub_path = os.path.join(path, f"run_{str(i)}.pbtxt")
             graph_paths.append(sub_path)
         return graph_paths
 

@@ -56,11 +56,10 @@ class Router():
             o_links = hw_obj.get_outbound_links()
             if not isinstance(hw_obj, Hardware):
                 raise ValueError("Invalid input!")
-            else:
-                for link_dst_name in o_links:
-                    if link_dst_name not in hardware_dict:
-                        # Cannot find the dest hardware in Link, fatal error
-                        raise ValueError("Invalid input!")
+            for link_dst_name in o_links:
+                if link_dst_name not in hardware_dict:
+                    # Cannot find the dest hardware in Link, fatal error
+                    raise ValueError("Invalid input!")
         self.__hardware_dict = copy.deepcopy(hardware_dict)
 
     def __dfs_generate_route_info(self, src_hw_name, dst_hw_name,
@@ -109,8 +108,7 @@ class Router():
                 if next_paths:
                     # Found valid paths
                     for link in links:
-                        for path in next_paths:
-                            result_list.append([link] + path)
+                        result_list.extend([link] + path for path in next_paths)
         # Remove current hardware log
         visited_hw_name.remove(src_hw_name)
         return result_list
@@ -136,10 +134,7 @@ class Router():
         '''
         if hw_name not in self.__hardware_dict:
             raise ValueError("Invalid input hw_name!")
-        if isinstance(self.__hardware_dict[hw_name], ComputationHardware):
-            return True
-        else:
-            return False
+        return isinstance(self.__hardware_dict[hw_name], ComputationHardware)
 
     def __get_route_path_type(self, path):
         '''Get the routing path type: PCIE or RDMA, used for SuperScalar
@@ -147,7 +142,4 @@ class Router():
         Args:
             path: list of Link
         '''
-        for link in path:
-            if link.link_type == "RDMA":
-                return 'RDMA'
-        return 'PCIE'
+        return next(('RDMA' for link in path if link.link_type == "RDMA"), 'PCIE')

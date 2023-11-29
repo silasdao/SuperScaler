@@ -63,7 +63,7 @@ class ResourcePool():
         servers_metadata = resources_yaml_data["Server"]
         # Create Servers
         for hostname, server_hardware in servers_metadata.items():
-            server_name = '/server/'+hostname+'/'
+            server_name = f'/server/{hostname}/'
             self.__servers[server_name] = Server(server_name)
 
     def __create_all_computational_devices(self, resources_yaml_data):
@@ -93,12 +93,11 @@ class ResourcePool():
         if hardware_spec is None:
             return self.valid_computational_hardware_type[
                 hardware_type](hardware_name)
-        else:
-            average_performance = \
+        average_performance = \
                 hardware_spec['properties']['average_performance']
-            new_hardware = self.valid_computational_hardware_type[
-                hardware_type](hardware_name, average_performance)
-            return new_hardware
+        return self.valid_computational_hardware_type[hardware_type](
+            hardware_name, average_performance
+        )
 
     def __create_all_links(self, resources_yaml_data):
         unique_link_id = 0
@@ -207,10 +206,7 @@ class ResourcePool():
     def get_links_as_list(self):
         '''Return a list of dict, representing links' info
         '''
-        link_info = []
-        for link in self.__links:
-            link_info.append(link.to_dict())
-        return link_info
+        return [link.to_dict() for link in self.__links]
 
     def get_computational_hardware_as_list(self):
         '''Return [{hardware0_spec}, {hardware1_spec}]

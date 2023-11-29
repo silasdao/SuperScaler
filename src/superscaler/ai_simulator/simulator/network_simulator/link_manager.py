@@ -63,9 +63,7 @@ class LinkManager():
     def get_link(self, link_id):
         '''Return a Link with specific link_id
         '''
-        if link_id not in self.__links_dict:
-            return None
-        return self.__links_dict[link_id]
+        return None if link_id not in self.__links_dict else self.__links_dict[link_id]
 
     def get_links_dict(self):
         '''Return a dict {link_id: Link obj} containing all links

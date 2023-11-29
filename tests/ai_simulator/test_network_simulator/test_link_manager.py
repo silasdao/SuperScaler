@@ -8,14 +8,15 @@ from superscaler.ai_simulator.simulator.network_simulator.link_manager import \
 
 
 def test_link_manager():
-    links_spec = []
-    for i in range(5):
-        links_spec.append(
-            {'link_id': i,
-             'source_name': 'device' + str(i),
-             'dest_name': 'device' + str(i+1),
-             'capacity': str(i)+'bps'}
-        )
+    links_spec = [
+        {
+            'link_id': i,
+            'source_name': f'device{str(i)}',
+            'dest_name': f'device{str(i + 1)}',
+            'capacity': f'{str(i)}bps',
+        }
+        for i in range(5)
+    ]
     links_spec.append(
         {'link_id': 5,
          'source_name': 'device0',
@@ -41,8 +42,8 @@ def test_link_manager():
         assert link_id not in link_id_set
         link_id_set.add(link_id)
         if link_id != 5:
-            assert link_obj.source_name == 'device' + str(link_id)
-            assert link_obj.dest_name == 'device' + str(link_id + 1)
+            assert link_obj.source_name == f'device{str(link_id)}'
+            assert link_obj.dest_name == f'device{str(link_id + 1)}'
             assert link_obj.capacity == link_id
         else:
             assert link_obj.source_name == 'device0'

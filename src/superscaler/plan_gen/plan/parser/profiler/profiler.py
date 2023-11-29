@@ -38,5 +38,4 @@ class TFProfiler(Profiler):
         op = node['op']
         input_shape_list = node['input_shapes']
         attr_list = node['attr_list']
-        result = self.database.search_record(op, input_shape_list, attr_list)
-        return result
+        return self.database.search_record(op, input_shape_list, attr_list)

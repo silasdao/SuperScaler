@@ -14,20 +14,19 @@ class Runtime(object):
         """
         # Check for the existence of plan_path
         if not os.path.exists(plan_path):
-            raise Exception("plan_path: %s is not existed!" % (plan_path))
+            raise Exception(f"plan_path: {plan_path} is not existed!")
         self.plan_path = plan_path
 
         # Check for the existence of libsc_path
         if not os.path.exists(libsc_path):
-            raise Exception("libsc_path: %s is not existed!" % (libsc_path))
+            raise Exception(f"libsc_path: {libsc_path} is not existed!")
         self.libsc_path = libsc_path
 
         # Check for the loading of libsc_path
         try:
             libsc = cdll.LoadLibrary(libsc_path)
         except BaseException:
-            raise Exception("libsc_path: %s is not loaded by ctype!" %
-                            (libsc_path))
+            raise Exception(f"libsc_path: {libsc_path} is not loaded by ctype!")
         self.libsc = libsc
 
         # Check for the init of libsc
@@ -38,9 +37,9 @@ class Runtime(object):
 
         # Check for the member function of libsc
         if not hasattr(self.libsc, "sc_get_device_id") or\
-           not hasattr(self.libsc, "sc_get_host_id") or\
-           not hasattr(self.libsc, "sc_get_world_size") or\
-           not hasattr(self.libsc, "sc_finalize"):
+               not hasattr(self.libsc, "sc_get_host_id") or\
+               not hasattr(self.libsc, "sc_get_world_size") or\
+               not hasattr(self.libsc, "sc_finalize"):
             raise Exception("member function not exist")
 
     def get_sc_lib_path(self):

@@ -35,7 +35,7 @@ class ReduceBroadcastAllreducePlan(AllreducePlan):
 
         # set rank 0 node as root
         root_node = endpoint.get_node(0)
-        is_root_node = True if node == root_node else False
+        is_root_node = node == root_node
 
         # input_name is the input_dependency_name for each node
         # input_name is initialized as None for the first generated node
@@ -44,14 +44,14 @@ class ReduceBroadcastAllreducePlan(AllreducePlan):
 
         # root gpu receives gradients from all non-root gpus for reducing,
         # then broadcasts reduced gradient to all non-root gpus
-        if is_root_node is True:
+        if is_root_node:
 
             # reduce: root gpu receives gradients from all non-root gpus
             for index in range(1, nRanks):
                 non_root_node = endpoint.get_node(index)
                 target = non_root_node.device
-                node_name = node.name + '_reduce_recv' + str(index-1)
-                target_name = node.name + '_reduce_send' + str(index-1)
+                node_name = f'{node.name}_reduce_recv{str(index - 1)}'
+                target_name = f'{node.name}_reduce_send{str(index - 1)}'
                 self._generate_node(node_index=node_index,
                                     node_name=node_name,
                                     input_name=input_name,
@@ -69,8 +69,8 @@ class ReduceBroadcastAllreducePlan(AllreducePlan):
             for index in range(1, nRanks):
                 non_root_node = endpoint.get_node(index)
                 target = non_root_node.device
-                node_name = node.name + '_broadcast_send' + str(index-1)
-                target_name = node.name + '_broadcast_recv' + str(index-1)
+                node_name = f'{node.name}_broadcast_send{str(index - 1)}'
+                target_name = f'{node.name}_broadcast_recv{str(index - 1)}'
                 self._generate_node(node_index=node_index,
                                     node_name=node_name,
                                     input_name=input_name,
@@ -84,15 +84,13 @@ class ReduceBroadcastAllreducePlan(AllreducePlan):
                 input_name = node_name
                 node_index += 1
 
-        # non-root gpus send orginal gradients to root gpus for reducing,
-        # then receive reduced gradient from root gpu
         else:
 
             target = root_node.device
 
             # reduce: non-root gpu sends gradient to the root gpu
-            node_name = node.name + '_reduce_send' + str(myRank-1)
-            target_name = node.name + '_reduce_recv' + str(myRank-1)
+            node_name = f'{node.name}_reduce_send{str(myRank - 1)}'
+            target_name = f'{node.name}_reduce_recv{str(myRank - 1)}'
             self._generate_node(node_index=node_index,
                                 node_name=node_name,
                                 input_name=input_name,
@@ -105,8 +103,8 @@ class ReduceBroadcastAllreducePlan(AllreducePlan):
                                 node_info=node)
 
             # boradcast: non-root gpu receives gradients from the root gpu
-            node_name = node.name + '_broadcast_recv' + str(myRank-1)
-            target_name = node.name + '_broadcast_send' + str(myRank-1)
+            node_name = f'{node.name}_broadcast_recv{str(myRank - 1)}'
+            target_name = f'{node.name}_broadcast_send{str(myRank - 1)}'
             self._generate_node(node_index=node_index,
                                 node_name=node_name,
                                 input_name=input_name,

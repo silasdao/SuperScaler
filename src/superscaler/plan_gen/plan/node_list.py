@@ -11,8 +11,7 @@ class NodeList(object):
                 self.node_list.append(new_node)
 
     def __iter__(self):
-        for node in self.node_list:
-            yield node
+        yield from self.node_list
 
     def __len__(self):
         return len(self.node_list)
@@ -20,10 +19,7 @@ class NodeList(object):
     def to_json(self):
         ''' Transfer class info into json list
         '''
-        output_json = []
-        for node in self.node_list:
-            output_json.append(node.to_json())
-        return output_json
+        return [node.to_json() for node in self.node_list]
 
     def insert(self, index, node):
         if isinstance(node, Node):
@@ -38,10 +34,7 @@ class NodeList(object):
             self.node_list.remove(node)
 
     def index(self, node):
-        if node in self.node_list:
-            return self.node_list.index(node)
-        else:
-            return None
+        return self.node_list.index(node) if node in self.node_list else None
 
     def get_node(self, index):
         if(isinstance(index, int) and index >= 0 and

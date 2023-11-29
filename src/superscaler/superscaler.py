@@ -56,9 +56,8 @@ class Superscaler(object):
 
         if not isinstance(cache_dir, str):
             return False
-        else:
-            self._cache_dir = cache_dir
-            return True
+        self._cache_dir = cache_dir
+        return True
 
     def _create_cache_dir(self, cache_dir):
         """ A function that create cache directory
@@ -71,10 +70,7 @@ class Superscaler(object):
             try:
                 os.mkdir(cache_dir)
             except OSError as exc:
-                if exc.errno == errno.EEXIST and\
-                   os.path.isdir(cache_dir):
-                    pass
-                else:
+                if exc.errno != errno.EEXIST or not os.path.isdir(cache_dir):
                     raise
 
     def is_initialized(self):
@@ -218,7 +214,6 @@ class Superscaler(object):
             """
             runtime.run(graph_path, plan_path)
             """
-            pass
         else:
             raise SuperscalerError("Superscaler must be run \
                                     after initialization is complete")

@@ -34,12 +34,10 @@ class PlanPool(object):
         else:
             return False
 
-        if plan_type not in self.__plan_pool:
-            return False
-        elif plan_name not in self.__plan_pool[plan_type]:
-            return False
-        else:
-            return True
+        return (
+            plan_type in self.__plan_pool
+            and plan_name in self.__plan_pool[plan_type]
+        )
 
     def get_plan(self, plan_type, plan_name):
         ''' Get a plan by the indexs of plan_type and plan_name

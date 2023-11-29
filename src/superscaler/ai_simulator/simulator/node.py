@@ -127,7 +127,7 @@ class Node():
         self.__status = NodeStatus.waiting
         # The number of dependency
         self.__remain_dependency_cnt = len(metadata.input_ids) + \
-            len(metadata.dependency_ids)
+                len(metadata.dependency_ids)
         # The device runtime object that this node is running on
         self.__device = device
         # List of Node ref. Node of successor nodes depends on this node.
@@ -136,21 +136,20 @@ class Node():
         # Check the input_node and dependency_node
         input_ids_set = set(self.__metadata.input_ids)
         dependency_ids_set = set(self.__metadata.dependency_ids)
-        if not len(dependency_ids_set) == len(self.__metadata.dependency_ids):
+        if len(dependency_ids_set) != len(self.__metadata.dependency_ids):
             raise NodeException(
-                '[ERROR] Node initialization failure because dependency_ids '
-                + 'has duplicate elements: %s' % self.__metadata.name)
-        if not len(input_ids_set & dependency_ids_set) == 0:
+                f'[ERROR] Node initialization failure because dependency_ids has duplicate elements: {self.__metadata.name}'
+            )
+        if len(input_ids_set & dependency_ids_set) != 0:
             raise NodeException(
-                '[ERROR] Node initialization failure because input_ids and '
-                + 'dependency_ids has same elements: %s'
-                % self.__metadata.name)
+                f'[ERROR] Node initialization failure because input_ids and dependency_ids has same elements: {self.__metadata.name}'
+            )
 
         # Check the device name
-        if not self.__device.name() == self.__metadata.device_name:
+        if self.__device.name() != self.__metadata.device_name:
             raise NodeException(
-                '[ERROR] Node initialization failure because device_name not '
-                + 'match: %s' % self.__metadata.name)
+                f'[ERROR] Node initialization failure because device_name not match: {self.__metadata.name}'
+            )
 
     def reset(self):
         metadata = self.__metadata
@@ -196,10 +195,11 @@ class Node():
             self.__remain_dependency_cnt -= cnt
         else:
             raise NodeException(
-                '[ERROR] node (%s) reduce an unexpected' % self.__metadata.name
-                + ' remain_dependency_cnt (reduce: %s, current: %s)' %
-                (cnt,
-                 self.__remain_dependency_cnt))
+                (
+                    f'[ERROR] node ({self.__metadata.name}) reduce an unexpected'
+                    + f' remain_dependency_cnt (reduce: {cnt}, current: {self.__remain_dependency_cnt})'
+                )
+            )
 
     def renew_successor_nodes(self, node_list):
         self.__successor_nodes.clear()
@@ -210,15 +210,17 @@ class Node():
         return self.__successor_nodes
 
     def execute(self, time_now):
-        if not self.is_ready() or not self.__status == NodeStatus.waiting:
+        if not self.is_ready() or self.__status != NodeStatus.waiting:
             raise NodeException(
-                '[ERROR] Execute a non-ready node: %s' % self.__metadata.name)
+                f'[ERROR] Execute a non-ready node: {self.__metadata.name}'
+            )
         self.__status = NodeStatus.executing
         self.__device.enqueue_node(self, time_now)
 
     def finish(self):
-        if not self.__status == NodeStatus.executing:
+        if self.__status != NodeStatus.executing:
             raise NodeException(
-                '[ERROR] Finish a non-execute node: %s' % self.__metadata.name)
+                f'[ERROR] Finish a non-execute node: {self.__metadata.name}'
+            )
         self.__status = NodeStatus.done
         self.__device.dequeue_node()

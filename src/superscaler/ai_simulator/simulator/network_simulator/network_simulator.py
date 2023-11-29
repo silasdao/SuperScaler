@@ -103,9 +103,6 @@ class NetworkSimulator(Device):
             time_now = next_flow.get_estimated_finish_time()
             # Calculate and update all flows' current capacities
             self.__update_all_flows_capacities(time_now)
-        elif next_flow.node.get_op() == "Recv":
-            # Dequeue a Recv Node
-            pass
 
     def __update_all_flows_capacities(self, time_now):
         '''Calculate all flow's capacities, and update flows' status during
@@ -128,7 +125,7 @@ class NetworkSimulator(Device):
             flow_capacity_log[flow] = []
             unfinished_schedule_flow.add(flow)
         # Iterate to assign all flows' capacity/bandwidth
-        while(len(unfinished_schedule_flow) != 0):
+        while unfinished_schedule_flow:
             # Schedule all links
             for link in self.__link_manager.get_links_dict().values():
                 link_schedule_result = self.__schedule_link(
@@ -137,7 +134,7 @@ class NetworkSimulator(Device):
                     unfinished_schedule_flow)
                 # Log all flows capacity to a smaller one
                 for flow_in_link, flow_capacity in \
-                        link_schedule_result.items():
+                            link_schedule_result.items():
                     flow_capacity_log[flow_in_link].append(flow_capacity)
             # Log which flow is the bottleneck
             bottleneck_flow = None

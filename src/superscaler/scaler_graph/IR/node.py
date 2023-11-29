@@ -48,16 +48,10 @@ class Node:
         self._output_tensors = self._create_output_tensors(output_size)
 
     def _create_output_tensors(self, output_size):
-        tensors = []
-        for i in range(output_size):
-            # TODO(gbxu): create Tensors
-            tensors.append(Tensor())
-        return tensors
+        return [Tensor() for _ in range(output_size)]
 
     def get_output_tensor(self, idx):
-        if idx == -1:
-            return None
-        return self._output_tensors[idx]
+        return None if idx == -1 else self._output_tensors[idx]
 
     def add_in_edge(self, edge, slot_idx=None):
         if slot_idx is not None:

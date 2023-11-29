@@ -16,8 +16,7 @@ def get_output_nodes(graph):
                 lambda node: get_upstream_nodes(node),
                 graph.nodes,
             )))
-    output_nodes = set(graph.nodes) - upstream_nodes
-    return output_nodes
+    return set(graph.nodes) - upstream_nodes
 
 
 def reverse_DFS(graph):
@@ -31,8 +30,7 @@ def reverse_DFS(graph):
         if current_node in ordered_nodes:
             return
         elif current_node in temp_nodes:
-            logger().error("there is a cycle in graph: %s" %
-                           (current_node.name))
+            logger().error(f"there is a cycle in graph: {current_node.name}")
             raise RuntimeError
         else:
             temp_nodes.add(current_node)
@@ -53,7 +51,4 @@ def get_upstream_nodes(node):
     if isinstance(node, CompositeNode):
         logger().error("We can't support CompositeNode now.")
         raise RuntimeError
-    upstream_nodes = set()
-    for edge in node.in_edges:
-        upstream_nodes.add(edge.src_node)
-    return upstream_nodes
+    return {edge.src_node for edge in node.in_edges}

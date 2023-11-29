@@ -49,12 +49,12 @@ class BuildExt(build_ext.build_ext):
         nproc = os.cpu_count()
         cmake_cmd = ['cmake', CURRENT_DIR]
         cmake_args = []
-        build_cmd = ['cmake', '--build', '.']
         build_args = ['-j', str(nproc)]
 
         # execute camke and build to build the extension
         subprocess.check_call(cmake_cmd + cmake_args, cwd=BUILD_DIR)
         if not self.dry_run:
+            build_cmd = ['cmake', '--build', '.']
             subprocess.check_call(build_cmd + build_args, cwd=BUILD_DIR)
 
 
@@ -105,10 +105,10 @@ if __name__ == '__main__':
             'numpy',
         ],
         extras_require={
-            'tensorflow': tensorflow_requires,
+            'tensorflow': all_frameworks_requires,
             'tensorflow-cpu': tensorflow_cpu_requires,
             'tensorflow-gpu': tensorflow_gpu_requires,
-            'all-frameworks': all_frameworks_requires
+            'all-frameworks': all_frameworks_requires,
         },
         ext_modules=[CMakeExtension('libsuperscaler_pywrap')],
         cmdclass={
@@ -126,5 +126,5 @@ if __name__ == '__main__':
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
             'Topic :: Scientific/Engineering :: Artificial Intelligence',
-        ]
+        ],
     )

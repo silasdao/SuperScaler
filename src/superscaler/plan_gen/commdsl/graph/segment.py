@@ -71,12 +71,12 @@ class DataSegment:
             self._id = DataSegmentPool().gen_id()
             self.name = name
             if name is None:
-                self.name = 'data_' + str(self._id)
+                self.name = f'data_{str(self._id)}'
         else:
             chunk_blocks = parent.bnum // parent.cnum
             self.root_bnum = parent.root_bnum
             self.root_blk_begin = \
-                parent.root_blk_begin + chunk_blocks * start_cid
+                    parent.root_blk_begin + chunk_blocks * start_cid
             self.root_blk_end = self.root_blk_begin + bnum
             self._id = parent._id
             self.name = parent.name
@@ -227,9 +227,10 @@ class DataSegment:
             if attr_name == 'cnum':
                 continue
             attr_val = self.__dict__[attr_name]
-            if not hasattr(other, attr_name):
-                return False
-            elif other.__dict__[attr_name] != attr_val:
+            if (
+                not hasattr(other, attr_name)
+                or other.__dict__[attr_name] != attr_val
+            ):
                 return False
         return True
 
@@ -243,9 +244,7 @@ class DataSegment:
         Returns:
           None
         """
-        return 'Data-{}:({})[{}:{}]'.format(
-            self._id, self.bnum, self.root_blk_begin, self.root_blk_end
-        )
+        return f'Data-{self._id}:({self.bnum})[{self.root_blk_begin}:{self.root_blk_end}]'
 
     # data segment operation interface
     def __add__(self, other):

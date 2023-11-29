@@ -47,19 +47,19 @@ class Tensor():
         '''
         # Check the validity of inputs
         if tensor_type not in Tensor.__tensor_type_xlate_tbl \
-                or Tensor.__tensor_type_xlate_tbl[tensor_type] is None:
+                    or Tensor.__tensor_type_xlate_tbl[tensor_type] is None:
             raise TensorException(
-                '[ERROR] Tensor initialization failure because unsupported '
-                + 'tensor_type: %s' % tensor_type)
+                f'[ERROR] Tensor initialization failure because unsupported tensor_type: {tensor_type}'
+            )
 
         if not isinstance(tensor_size, int):
             raise TensorException(
-                '[ERROR] Tensor initialization failure because data size is '
-                + 'not an integer: %s' % tensor_size)
+                f'[ERROR] Tensor initialization failure because data size is not an integer: {tensor_size}'
+            )
         if tensor_size < 0:
             raise TensorException(
-                '[ERROR] Tensor initialization failure because data size is '
-                + 'negative: %s' % tensor_size)
+                f'[ERROR] Tensor initialization failure because data size is negative: {tensor_size}'
+            )
 
         # int, the data type stored in the node
         self.tensor_type = tensor_type

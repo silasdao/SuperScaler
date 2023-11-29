@@ -29,17 +29,14 @@ def distribute_resources(deployment_setting,
     }
     """
     if not os.path.exists(local_resource_dir):
-        raise Exception('local_resource_dir: %s is not existed!' %
-                        (local_resource_dir))
+        raise Exception(f'local_resource_dir: {local_resource_dir} is not existed!')
 
     for ip in deployment_setting.keys():
         if ip == "localhost":
-            run_shell_cmd('rsync -az %s %s' %
-                          (local_resource_dir, remote_resource_dir))
+            run_shell_cmd(f'rsync -az {local_resource_dir} {remote_resource_dir}')
         else:
             # Remote sync runtime files
-            run_shell_cmd('rsync -az %s %s:%s' %
-                          (local_resource_dir, ip, remote_resource_dir))
+            run_shell_cmd(f'rsync -az {local_resource_dir} {ip}:{remote_resource_dir}')
 
     return os.path.join(remote_resource_dir,
                         os.path.basename(local_resource_dir))
@@ -65,8 +62,13 @@ def launch(rank2ip, rank2cmd):
     mpirun_command = (
         'mpirun --allow-run-as-root --tag-output '
         '{cmds} '.format(
-            cmds=' : '.join('-np 1 -host {ip_slots} {cmd}'.format(
-                ip_slots=ip + ':' + str(hosts_and_slots[ip]), cmd=(cmd))
-                for ip, cmd in zip(rank2ip, rank2cmd))))
+            cmds=' : '.join(
+                '-np 1 -host {ip_slots} {cmd}'.format(
+                    ip_slots=f'{ip}:{str(hosts_and_slots[ip])}', cmd=(cmd)
+                )
+                for ip, cmd in zip(rank2ip, rank2cmd)
+            )
+        )
+    )
 
     run_shell_cmd(mpirun_command)

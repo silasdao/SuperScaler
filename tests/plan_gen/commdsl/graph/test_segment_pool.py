@@ -9,7 +9,6 @@ class ErrorSegNoID:
 
     def __init__(self):
         self.get_id = 0
-        pass
 
     def scale(self):
         pass
@@ -19,7 +18,6 @@ class ErrorSegNoScale:
 
     def __init__(self):
         self.scale = 0
-        pass
 
     def get_id(self):
         pass

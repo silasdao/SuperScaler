@@ -14,9 +14,9 @@ from functools import wraps
 def TFRecordDataset(*args, **kwargs):
     if "filenames" in kwargs:
         for i, _ in enumerate(kwargs["filenames"]):
-            kwargs["filenames"][i] = "DATASET_PATH:" + str(i)
+            kwargs["filenames"][i] = f"DATASET_PATH:{str(i)}"
     else:
-        assert (len(args) > 0)
+        assert args
         args_copy = list(args)
         args_copy[0] = "DATASET_PATH:0"
     return tf.data.TFRecordDataset(*args_copy, **kwargs)
@@ -67,9 +67,10 @@ class tensorflow(Superscaler):
 
         # Convert partition_graphs into tf_protobuf
         self._partition_graphs = []
-        for graph in parallelizer.graphs:
-            self._partition_graphs.append(
-                tf_adapter.export_graph_to_tf_file(graph))
+        self._partition_graphs.extend(
+            tf_adapter.export_graph_to_tf_file(graph)
+            for graph in parallelizer.graphs
+        )
         self._graph_count = len(parallelizer.graphs)
         self._graph_config = tf_adapter.get_tf_runtime_config(merged_sc_graph)
 
@@ -88,7 +89,7 @@ class tensorflow(Superscaler):
 
         # init plan_generator
         self._resoure_pool.init_from_yaml(resource_pool)
-        devices = ["device_" + str(i) for i in range(self._graph_count)]
+        devices = [f"device_{str(i)}" for i in range(self._graph_count)]
         nodelist = self._plan_parser.parse_graphs(
             self._partition_graphs, devices, load_from_memory=True)
 
@@ -118,35 +119,34 @@ class tensorflow(Superscaler):
             This function is avaliable when self.is_initialized() is True
         """
 
-        if self.is_initialized() is True:
-            if not isinstance(args, argparse.Namespace) or\
+        if self.is_initialized() is not True:
+            raise SuperscalerError("Superscaler must be run \
+                                    after initialization is complete")
+        if not isinstance(args, argparse.Namespace) or\
                not isinstance(args.steps, int) or\
                not isinstance(args.interval, int) or\
                not isinstance(args.print_info, bool) or\
                not isinstance(args.print_fetches_targets, bool):
-                raise SuperscalerError("Superscaler runtime argument illegal")
+            raise SuperscalerError("Superscaler runtime argument illegal")
 
-            deployment_config, rank2ip =\
+        deployment_config, rank2ip =\
                 self._plan_assigner.get_deployment_config(self._assigned_plan)
-            remote_resource_dir = distribute_resources(deployment_config,
-                                                       self._working_dir)
-            print(remote_resource_dir)
-            cmd_per_worker = [
-                'python -m superscaler.runtime.tensorflow.runner '
-                '--model_dir_prefix {resource_dir}/{grank} '
-                '--steps {steps} '
-                '--interval {interval} '
-                '--print_info {print_info} '
-                '--print_fetches_targets {print_fetches_targets} '
-                .format(resource_dir=remote_resource_dir,
-                        grank=grank,
-                        steps=args.steps,
-                        interval=args.interval,
-                        print_info=args.print_info,
-                        print_fetches_targets=args.print_fetches_targets)
-                for grank, _ in enumerate(rank2ip)
-            ]
-            launch(rank2ip, cmd_per_worker)
-        else:
-            raise SuperscalerError("Superscaler must be run \
-                                    after initialization is complete")
+        remote_resource_dir = distribute_resources(deployment_config,
+                                                   self._working_dir)
+        print(remote_resource_dir)
+        cmd_per_worker = [
+            'python -m superscaler.runtime.tensorflow.runner '
+            '--model_dir_prefix {resource_dir}/{grank} '
+            '--steps {steps} '
+            '--interval {interval} '
+            '--print_info {print_info} '
+            '--print_fetches_targets {print_fetches_targets} '
+            .format(resource_dir=remote_resource_dir,
+                    grank=grank,
+                    steps=args.steps,
+                    interval=args.interval,
+                    print_info=args.print_info,
+                    print_fetches_targets=args.print_fetches_targets)
+            for grank, _ in enumerate(rank2ip)
+        ]
+        launch(rank2ip, cmd_per_worker)

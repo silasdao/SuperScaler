@@ -18,25 +18,28 @@ def test_network_simulator_functionality():
         'network_sim',
         [
             {
-                'link_id': 0, 'source_name': '/server/hostname/GPU/0/',
+                'link_id': 0,
+                'source_name': '/server/hostname/GPU/0/',
                 'dest_name': '/switch/switch0/',
-                'capacity': str(tensor_unit.get_bytes_size()*8*10)+'bps'
+                'capacity': f'{str(tensor_unit.get_bytes_size() * 8 * 10)}bps',
             },
             {
-                'link_id': 1, 'source_name': '/server/hostname/GPU/1/',
+                'link_id': 1,
+                'source_name': '/server/hostname/GPU/1/',
                 'dest_name': '/switch/switch0/',
-                'capacity': str(tensor_unit.get_bytes_size()*8*2)+'bps'
+                'capacity': f'{str(tensor_unit.get_bytes_size() * 8 * 2)}bps',
             },
             {
-                'link_id': 2, 'source_name': '/switch/switch0/',
+                'link_id': 2,
+                'source_name': '/switch/switch0/',
                 'dest_name': '/server/hostname/GPU/2/',
-                'capacity': str(tensor_unit.get_bytes_size()*8*6)+'bps'
-            }
+                'capacity': f'{str(tensor_unit.get_bytes_size() * 8 * 6)}bps',
+            },
         ],
         {
             ('/server/hostname/GPU/0/', '/server/hostname/GPU/2/', 0): [0, 2],
-            ('/server/hostname/GPU/1/', '/server/hostname/GPU/2/', 0): [1, 2]
-        }
+            ('/server/hostname/GPU/1/', '/server/hostname/GPU/2/', 0): [1, 2],
+        },
     )
     assert net_sim.is_idle()
     next_node, next_time = net_sim.get_next_node()

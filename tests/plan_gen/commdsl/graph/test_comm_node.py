@@ -147,7 +147,7 @@ def test_trans_node_reduction():
 def test_trans_node_repr():
     seg = DataSegment(1)
     tnode = TransNode(TransNodeType.SEND, sendbuf=seg, dst=1)
-    assert repr(tnode) == 'Send {} -> rank 1'.format(seg)
+    assert repr(tnode) == f'Send {seg} -> rank 1'
 
 
 def test_comp_node_init():

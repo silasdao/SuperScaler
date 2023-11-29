@@ -25,5 +25,4 @@ class DeviceFactory():
 
         if device_type not in self.valid_device_type:
             raise ValueError("device_type in device_info is invalid")
-        device = self.valid_device_type[device_type](*spec_list)
-        return device
+        return self.valid_device_type[device_type](*spec_list)

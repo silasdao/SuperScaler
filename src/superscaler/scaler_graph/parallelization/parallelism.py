@@ -28,19 +28,18 @@ class DataParallelism(Parallelism):
                 continue
             edge = node.in_edges[node.op.info["gradient_index"]]
             sc_op = operator.AllreduceOp()
-            input_node_idxes = []
-            input_node_idxes.append((edge.src_node, edge.src_idx))
-            attrs = {}
-            attrs["tensor_name"] = edge.src_node.name + "_allreduce"
-            attrs["T"] = edge.src_node.attrs["T"]
-            attrs["reduction"] = "sum"
-            attrs["num_devices"] = str(len(self.devices))
-            node_name = edge.src_node.name + "_allreduce"
+            input_node_idxes = [(edge.src_node, edge.src_idx)]
+            attrs = {
+                "tensor_name": f"{edge.src_node.name}_allreduce",
+                "T": edge.src_node.attrs["T"],
+                "reduction": "sum",
+                "num_devices": str(len(self.devices)),
+            }
+            node_name = f"{edge.src_node.name}_allreduce"
             graph.remove_edge(edge)
             node = graph.add_node_and_edge(node_name, sc_op, input_node_idxes,
                                            1, attrs)
             graph.add_edge(node, 0, edge.dest_node, edge.dest_idx)
         self.parallel_graphs = []
-        for i in range(len(self.devices)):
-            self.parallel_graphs.append(graph.copy())
+        self.parallel_graphs.extend(graph.copy() for _ in range(len(self.devices)))
         return True

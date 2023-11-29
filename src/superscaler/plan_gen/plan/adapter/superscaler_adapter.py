@@ -59,10 +59,7 @@ class SuperScalerAdapter(Adapter):
         comm_node_list = self.__extract_comm_nodes()
         self.__create_index_dependency(comm_node_list)
         self.__split_device_info(comm_node_list)
-        multi_comm_node_dict =\
-            self.__differentiate_node_list(comm_node_list)
-
-        return multi_comm_node_dict
+        return self.__differentiate_node_list(comm_node_list)
 
     def __extract_comm_nodes(self):
         """ Extract communication nodes of Send, Recv and Allreduce
@@ -71,14 +68,9 @@ class SuperScalerAdapter(Adapter):
 
         comm_ops = ['Send', 'Recv', 'Allreduce']
 
-        comm_node_list = []
         node_list = copy.deepcopy(self.__node_list)
 
-        for node in node_list:
-            if 'op' in node and node['op'] in comm_ops:
-                comm_node_list.append(node)
-
-        return comm_node_list
+        return [node for node in node_list if 'op' in node and node['op'] in comm_ops]
 
     def __create_index_dependency(self, node_list):
         ''' Introduce index attr into node_list, then convert
@@ -118,9 +110,11 @@ class SuperScalerAdapter(Adapter):
 
             # Transfer name dependency to index dependency
             if 'input' in node:
-                for input_name in node['input']:
-                    if (input_name, device) in node_book:
-                        input_ids.append(node_book[(input_name, device)])
+                input_ids.extend(
+                    node_book[(input_name, device)]
+                    for input_name in node['input']
+                    if (input_name, device) in node_book
+                )
                 node.pop('input')
             node['input_ids'] = input_ids
 

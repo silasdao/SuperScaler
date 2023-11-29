@@ -93,10 +93,7 @@ def test_resource_pool_functionality():
         '/server/hostname1/CPU/1/', '/server/hostname1/GPU/0/'
     ) == []
 
-    # Test get_links_as_list()
-    all_links_info = []
-    for link in links:
-        all_links_info.append(link.to_dict())
+    all_links_info = [link.to_dict() for link in links]
     assert rp.get_links_as_list() == all_links_info
 
     # Test get_computational_hardware_as_list()

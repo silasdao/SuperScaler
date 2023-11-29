@@ -37,10 +37,10 @@ def test_comm_graph_core():
     graph.add_op(cnode1)
     graph.add_op(tnode3)
     assert len(graph.nodes) == 5
-    assert tnode1.name == TransNodeType.SEND.value + '_0'
-    assert tnode2.name == TransNodeType.RECV.value + '_0'
-    assert cnode1.name == CompNodeType.ADD.value + '_0'
-    assert tnode3.name == TransNodeType.SEND.value + '_1'
+    assert tnode1.name == f'{TransNodeType.SEND.value}_0'
+    assert tnode2.name == f'{TransNodeType.RECV.value}_0'
+    assert cnode1.name == f'{CompNodeType.ADD.value}_0'
+    assert tnode3.name == f'{TransNodeType.SEND.value}_1'
     # test generated graph
     graph.gen_graph()
     assert graph.adj[0, 1] == 1

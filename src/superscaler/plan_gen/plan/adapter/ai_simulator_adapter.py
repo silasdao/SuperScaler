@@ -18,23 +18,19 @@ class AISimulatorAdapter(Adapter):
         Args:
             node_list: list
         '''
-        if(not isinstance(node_list, NodeList) and
-           not isinstance(node_list, list)):
-            self.__plan = None
-            return False
-        else:
-            if isinstance(node_list, NodeList):
-                self.__plan = node_list.to_json()
-            elif isinstance(node_list, list):
-                self.__plan = node_list
+        if isinstance(node_list, (NodeList, list)):
+            self.__plan = (
+                node_list.to_json()
+                if isinstance(node_list, NodeList)
+                else node_list
+            )
             if not self.__check_plan_attr():
                 self.__plan = None
                 return False
             if self.__parse_plan():
                 return True
-            else:
-                self.__plan = None
-                return False
+        self.__plan = None
+        return False
 
     def get_plan(self):
         return self.__plan
@@ -151,8 +147,7 @@ class AISimulatorAdapter(Adapter):
                     if (input_name, device) in node_book:
                         input_ids.append(node_book[(input_name, device)])
                     elif (input_name, device) in parent_book:
-                        for id_ in parent_book[(input_name, device)]:
-                            input_ids.append(id_)
+                        input_ids.extend(iter(parent_book[(input_name, device)]))
                     else:
                         return False
             node.pop('input')
@@ -209,14 +204,14 @@ class AISimulatorAdapter(Adapter):
         for node_raw in self.__plan:
             # Add device_name and output_tensors attributes
             node_raw['device_name'] = node_raw['device']
-            if node_raw['op'] == 'Send' or node_raw['op'] == 'Recv':
+            if node_raw['op'] in ['Send', 'Recv']:
                 # Set device_name to NetworkSimulator for send/recv nodes
                 node_raw['device_name'] = 'NetworkSimulator'
-                if node_raw['op'] == 'Send':
-                    # Change name of node, this is used as routing info
-                    new_name = ":send:{0}:{1}:{2}:".format(
-                        node_raw['device'], node_raw['target'],
-                        node_raw['route_index']
-                    )
-                    node_raw['name'] = new_name
+            if node_raw['op'] == 'Send':
+                # Change name of node, this is used as routing info
+                new_name = ":send:{0}:{1}:{2}:".format(
+                    node_raw['device'], node_raw['target'],
+                    node_raw['route_index']
+                )
+                node_raw['name'] = new_name
         return True

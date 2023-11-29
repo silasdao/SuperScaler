@@ -37,8 +37,7 @@ def test_tf_attr_parser():
                                                   tf.compat.v1.GraphDef())
                     return graph_def
                 except text_format.ParseError as e:
-                    raise InputError("Cannot parse file %s: %s." %
-                                     (filename, str(e)))
+                    raise InputError(f"Cannot parse file {filename}: {str(e)}.")
             return graph_def
 
         graph = __load_protobuf_from_file(filename)
@@ -110,7 +109,7 @@ def test_TFParser():
         path = os.path.join(os.path.dirname(__file__), path)
         graph_paths = []
         for i in range(device_count):
-            sub_path = os.path.join(path, "run_" + str(i) + ".pbtxt")
+            sub_path = os.path.join(path, f"run_{str(i)}.pbtxt")
             graph_paths.append(sub_path)
         return graph_paths
 

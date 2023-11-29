@@ -61,7 +61,7 @@ class Hardware(Resource):
 
     def __str__(self):
         '''For display purpose'''
-        description = "Hardware name: " + self.get_name() + ":\n"
+        description = f"Hardware name: {self.get_name()}" + ":\n"
         description += "\tOutbound links: [\n\t\t"
         for dest_name, links in self.__outbound_links.items():
             for link in links:
@@ -108,21 +108,20 @@ class ComputationHardware(Hardware):
         If name_str is not valid, a ValueError will be raised.
         '''
         hardware_description = name_str.split('/')
-        if(len(hardware_description) < 6):
-            raise ValueError("Invalid ComputationHardware name: %s"
-                             % name_str)
-        if(hardware_description[1] != 'server'):
-            raise ValueError("Invalid ComputationHardware name: %s"
-                             % name_str)
+        if (len(hardware_description) < 6):
+            raise ValueError(f"Invalid ComputationHardware name: {name_str}")
+        if (hardware_description[1] != 'server'):
+            raise ValueError(f"Invalid ComputationHardware name: {name_str}")
         host_name, hardware_type, hardware_index, *extra_info = \
-            hardware_description[2:]
+                hardware_description[2:]
         return host_name, hardware_type, hardware_index, extra_info
 
     def to_dict(self):
         '''Return the dict represtation of ComputationHardware essential data
         '''
-        return dict({'performance': str(self.__performance)+'bps'},
-                    **super().to_dict())
+        return dict(
+            {'performance': f'{str(self.__performance)}bps'}, **super().to_dict()
+        )
 
 
 class CPUHardware(ComputationHardware):
@@ -133,9 +132,9 @@ class CPUHardware(ComputationHardware):
         '''
         # Check if name is valid
         _, hardware_type, *__ = \
-            ComputationHardware.get_computation_hardware_description(name)
+                ComputationHardware.get_computation_hardware_description(name)
         if hardware_type != "CPU":
-            raise ValueError("Invalid CPUHardware name: %s" % name)
+            raise ValueError(f"Invalid CPUHardware name: {name}")
         super().__init__(name, performance)
 
 
@@ -148,9 +147,9 @@ class GPUHardware(ComputationHardware):
         '''
         # Check if name is valid
         _, hardware_type, *__ = \
-            ComputationHardware.get_computation_hardware_description(name)
+                ComputationHardware.get_computation_hardware_description(name)
         if hardware_type != "GPU":
-            raise ValueError("Invalid CPUHardware name: %s" % name)
+            raise ValueError(f"Invalid CPUHardware name: {name}")
         super().__init__(name, performance)
 
 
@@ -164,6 +163,5 @@ class NetworkSwitchHardware(Hardware):
         # Check if name is valid
         hardware_type, switch_name, *__ = name.split('/')[1:]
         if hardware_type != 'switch':
-            raise ValueError(
-                "Invalid NetworkSwitch name: %s" % name)
+            raise ValueError(f"Invalid NetworkSwitch name: {name}")
         super().__init__(name)
